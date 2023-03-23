@@ -75,6 +75,7 @@ CUDA_PATH ?= /usr/local/cuda
 # Location of the CUDA Toolkit
 CUDA_PATH ?= /usr/local/cuda
 
+
 ##############################
 # start deprecated interface #
 ##############################
@@ -205,6 +206,8 @@ NVCCFLAGS   := -m${TARGET_SIZE}
 CCFLAGS     :=
 LDFLAGS     :=
 
+NVCCFLAGS 	+= --cudart=shared
+
 # build flags
 ifeq ($(TARGET_OS),darwin)
     LDFLAGS += -rpath $(CUDA_PATH)/lib
@@ -308,7 +311,7 @@ ifeq ($(TARGET_ARCH),armv7l)
   SAMPLE_ENABLED := 0
 endif
 
-ALL_LDFLAGS :=
+ALL_LDFLAGS := -lcuda -lcudart
 ALL_LDFLAGS += $(ALL_CCFLAGS)
 ALL_LDFLAGS += $(addprefix -Xlinker ,$(LDFLAGS))
 ALL_LDFLAGS += $(addprefix -Xlinker ,$(EXTRA_LDFLAGS))

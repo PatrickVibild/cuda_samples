@@ -22,6 +22,11 @@
 // For the CUDA runtime routines (prefixed with "cuda_")
 #include <cuda_runtime.h>
 
+#include <sys/time.h>
+#include <cuda_runtime.h>
+#include <iostream>
+
+
 /**
  * CUDA Kernel Device code
  *
@@ -45,11 +50,12 @@ vectorAdd(const float *A, const float *B, float *C, int numElements)
 int
 main(void)
 {
+    clock_t total_t, execution_t;
     // Error code to check return values for CUDA calls
     cudaError_t err = cudaSuccess;
 
     // Print the vector length to be used, and compute its size
-    int numElements = 50000;
+    int numElements = 500000;
     size_t size = numElements * sizeof(float);
     printf("[Vector addition of %d elements]\n", numElements);
 
@@ -106,6 +112,8 @@ main(void)
         exit(EXIT_FAILURE);
     }
 
+    total_t = clock();
+
     // Copy the host input vectors A and B in host memory to the device input vectors in
     // device memory
     printf("Copy input data from the host memory to the CUDA device\n");
@@ -125,6 +133,7 @@ main(void)
         exit(EXIT_FAILURE);
     }
 
+    execution_t = clock();
     // Launch the Vector Add CUDA Kernel
     int threadsPerBlock = 256;
     int blocksPerGrid =(numElements + threadsPerBlock - 1) / threadsPerBlock;
@@ -137,6 +146,8 @@ main(void)
         fprintf(stderr, "Failed to launch vectorAdd kernel (error code %s)!\n", cudaGetErrorString(err));
         exit(EXIT_FAILURE);
     }
+
+    execution_t = clock() - execution_t;
 
     // Copy the device result vector in device memory to the host result vector
     // in host memory.
@@ -190,6 +201,12 @@ main(void)
     free(h_A);
     free(h_B);
     free(h_C);
+
+    total_t = clock() - total_t;
+
+    printf("vectorAdd total time (ms): %f \n", (float)total_t / CLOCKS_PER_SEC * 1000);
+    printf("vectorAdd execution time (ms): %f \n", (float)execution_t / CLOCKS_PER_SEC * 1000);
+
 
     // Reset the device and exit
     // cudaDeviceReset causes the driver to clean up all state. While
